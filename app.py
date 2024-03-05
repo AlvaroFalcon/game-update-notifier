@@ -8,9 +8,6 @@ from dotenv import load_dotenv
 
 from modules.steam import Steam
 from modules.discord import Discord
-from modules.epicgames import EpicGames
-from modules.msstore import MSStore
-from modules.gog import GOG
 
 dotenv_path = join(dirname(__file__), ".env")
 load_dotenv(dotenv_path)
@@ -33,28 +30,6 @@ def main():
         x.strip()
         for x in os.getenv("STEAM_APP_IDS").strip('"').strip("'").split(",")
         if not os.getenv("STEAM_APP_IDS") == ""
-    ]
-
-    WATCH_MSSTORE = os.getenv("WATCH_MSSTORE").lower() == "true"
-    MSSTORE_APP_IDS = [
-        x.strip()
-        for x in os.getenv("MSSTORE_APP_IDS").strip('"').strip("'").split(",")
-        if not os.getenv("MSSTORE_APP_IDS") == ""
-    ]
-    MSSTORE_MARKET = os.getenv("MSSTORE_MARKET")
-
-    WATCH_EPICGAMES = os.getenv("WATCH_EPICGAMES").lower() == "true"
-    EPICGAMES_APP_IDS = [
-        x.strip()
-        for x in os.getenv("EPICGAMES_APP_IDS").strip('"').strip("'").split(",")
-        if not os.getenv("EPICGAMES_APP_IDS") == ""
-    ]
-
-    WATCH_GOG = os.getenv("WATCH_GOG").lower() == "true"
-    GOG_APP_IDS = [
-        x.strip()
-        for x in os.getenv("GOG_APP_IDS").strip('"').strip("'").split(",")
-        if not os.getenv("GOG_APP_IDS") == ""
     ]
 
     DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
@@ -86,65 +61,11 @@ def main():
         )
         steam = Steam(STEAM_APP_IDS, steam_notifier, IGNORE_FIRST_NOTIFICATION)
 
-    if WATCH_MSSTORE:
-        msstore_notifier = Discord(
-            webhook_url=DISCORD_WEBHOOK_URL,
-            role_ids=DISCORD_MENTION_ROLE_IDS,
-            user_ids=DISCORD_MENTION_USER_IDS,
-            platform="Microsoft Store",
-            thumb_url=(
-                "https://github.com/kurokobo/game-update-notifier/raw/main/"
-                "assets/msstore.png"
-            ),
-            embed_color="e6e6fa",
-        )
-        msstore = MSStore(
-            MSSTORE_APP_IDS, msstore_notifier, IGNORE_FIRST_NOTIFICATION, MSSTORE_MARKET
-        )
-
-    if WATCH_EPICGAMES:
-        epicgames_notifier = Discord(
-            webhook_url=DISCORD_WEBHOOK_URL,
-            role_ids=DISCORD_MENTION_ROLE_IDS,
-            user_ids=DISCORD_MENTION_USER_IDS,
-            platform="Epic Games",
-            thumb_url=(
-                "https://github.com/kurokobo/game-update-notifier/raw/main/"
-                "assets/epicgames.png"
-            ),
-            embed_color="11cf59",
-        )
-        epicgames = EpicGames(
-            EPICGAMES_APP_IDS, epicgames_notifier, IGNORE_FIRST_NOTIFICATION
-        )
-
-    if WATCH_GOG:
-        gog_notifier = Discord(
-            webhook_url=DISCORD_WEBHOOK_URL,
-            role_ids=DISCORD_MENTION_ROLE_IDS,
-            user_ids=DISCORD_MENTION_USER_IDS,
-            platform="GOG",
-            thumb_url=(
-                "https://github.com/kurokobo/game-update-notifier/raw/main/assets/gog.png"
-            ),
-            embed_color="c62ee8",
-        )
-        gog = GOG(GOG_APP_IDS, gog_notifier, IGNORE_FIRST_NOTIFICATION)
-
     while True:
         logger.info("Loop start: {}".format(datetime.now()))
 
         if WATCH_STEAM:
             steam.check_update()
-
-        if WATCH_MSSTORE:
-            msstore.check_update()
-
-        if WATCH_EPICGAMES:
-            epicgames.check_update()
-
-        if WATCH_GOG:
-            gog.check_update()
 
         logger.info("Will sleep {} seconds".format(CHECK_INTERVAL_SEC))
         time.sleep(CHECK_INTERVAL_SEC)
